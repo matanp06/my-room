@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matan's room</title>
+    <link rel="stylesheet" href="styles/room.css">
+</head>
+<body>
+    <div class="logout">
+        <form action="/log-out" method="post">
+            <input type="hidden" name="username" value="<%=username%>">
+            <input type="hidden" name="key" value="<%=key%>">
+            <button method="submit">logout</button>
+        </form>
+    </div>
+    <h1>MATAN'S ROOM</h1>
+    <div class="actions">
+        <form action="/led-on" method="post">
+            <input type="hidden" name="username" value="<%=username%>">
+            <input type="hidden" name="key" value="<%=key%>">
+            <button action="submit">turn on light</button>
+        </form>
+        <form action="/led-off" method="post">
+            <input type="hidden" name="username" value="<%=username%>">
+            <input type="hidden" name="key" value="<%=key%>">
+            <button>turn off light</button>
+        </form>
+        <form action="/a-on" method="post">
+            <input type="hidden" name="username" value="<%=username%>">
+            <input type="hidden" name="key" value="<%=key%>">
+            <button>auto light</button>
+        </form>
+    </div>
+</body>
+</html>

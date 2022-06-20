@@ -1,0 +1,18 @@
+body{
+ background-color: red;
+ text-align: center;
+}
+
+form{
+    display: flex;
+    flex-direction: column;
+}
+
+form > input , form > button{
+    margin: 10px 50px;
+    font-size: 17px;
+}
+
+form input{
+    padding: 3px;
+}

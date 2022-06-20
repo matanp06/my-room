@@ -1,0 +1,55 @@
+body{
+    background-color: red;
+    text-align: center;
+}
+
+.logout{
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+}
+
+.logout form button{
+    font-size: 20px;
+
+    width: min-content;
+    /* background-color: transparent; */
+    /* border: 5px solid black; */
+    /* border-radius: 50%; */
+    text-align: center;
+    /* aspect-ratio: 1; */
+}
+
+.actions{
+    display: flex;
+    position: relative;
+    flex-wrap: wrap;
+    width: 90%;
+    margin: auto;
+}
+
+.actions form{
+    flex: 40%;
+    margin: 5%;
+    aspect-ratio: 1;
+    max-width: 40%;
+}
+
+.actions form button{
+    margin: 0;
+    /* flex: 40%; */
+    /* margin: 5%; */
+    width: -webkit-fill-available;
+    aspect-ratio: 1;
+    /* max-width: 40%; */
+    font-size: 20px;
+}
+
+/* .actions button{
+    flex: 40%;
+    margin: 5%;
+    aspect-ratio: 1;
+    max-width: 40%;
+    font-size: 20px;
+
+} */
