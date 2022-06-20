@@ -5,6 +5,7 @@ const https = require('https');
 const ejs = require('ejs');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const cookieParser = require('cookie-parser');
 
 mongoose.connect("mongodb://localhost:27017/MyRoom");
 
@@ -76,12 +77,47 @@ app.set('view engine','ejs');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname+'/public'));
+app.use(cookieParser("this Is My secret cookie parse key"));
 
 app.get('/',(req,res)=>{
+
+    const cookie = req.signedCookies.sessionKey;
+    if(cookie){//trying to validate with cookie
+        const username = cookie.username;
+        const key = cookie.key;
+
+        User.findOne({username:username,"sessionKey.key":key,"sessionKey.loggedIn":true},
+        function(err,user){
+            if(err){
+                console.log(err);
+                res.redirect("/log-in");
+            } else if(user){//user found
+                isSessionDateValid(user).then((result)=>{
+                    if(result){// session date is valid
+                        res.render("room.ejs");
+                    } else {//session time isn't valid
+                        res.clearCookie("sessionKey");
+                        res.redirect("/log-in");
+                    }
+                }).catch((err)=>{
+                    console.log(err);
+                    res.redirect("/log-in");
+                });
+            } else {// user wasn't found
+                res.redirect("/log-in");
+            }
+        });
+    } else {//cookie wasn't found
+        res.redirect("/log-in");
+    }
+
+});
+
+//LOG IN
+app.get('/log-in',function(req,res){
     res.render('login.ejs',{});
 })
 
-//LOG IN
 app.post('/log-in',function (req, res) {
     const username = req.body.username;
     const password = req.body.password;
@@ -105,7 +141,13 @@ app.post('/log-in',function (req, res) {
 
                     //updating the user's sessionKey in the database
                     user.save().then(()=>{
-                        res.render("room.ejs",{username:username, key,key});
+                        const cookieData = {
+                            username: username,
+                            key:key
+                        };
+                        
+                        //creating cookies and redirect to the the root (room) page
+                        res.cookie('sessionKey',cookieData,{signed:true}).redirect("/");
                     }).catch((err)=>{console.log(err)});
                 }
                 else{//passwords aren't match
@@ -127,115 +169,144 @@ app.post('/log-in',function (req, res) {
 //LED ON
 //updated with auth
 app.post('/led-on', function (req, res) {
-
-    const username = req.body.username;
-    const key = req.body.key;
-    console.log(key);
-
-    //autinticatin user
-    User.findOne({username:username, "sessionKey.key":key,"sessionKey.loggedIn":true},
-    function(err,user){
-        if(err){
-            console.log(err);
-            res.redirect("/");
-        } else if(user){//User found 
-            isSessionDateValid(user).then((result)=>{
-                if(result){ // Session date is valid ==> user authenticated
-                    automathic = false; //settign authomaticlight mode to off
-                    led.on();
-                    res.render('room.ejs',{username:username, key:key});
-                    console.log('LED ON');
-                } else { // Session date isn't vaild
-                    resetSession(user,function(){
-                        res.redirect("/");
-                    });    
-                }
-            }).catch((err)=>{console.log(err)});            
-        } else {//Authintication failed
-            console.log("user not found");
-            res.redirect("/");
-        }
-    });
+    
+    //getting session data from cookie
+    const cookie = req.signedCookies.sessionKey;
+    if(cookie){//checking that the cookie still exists
+        const username = cookie.username;
+        const key = cookie.key;
+        console.log(key);
+    
+        //autinticatin user
+        User.findOne({username:username, "sessionKey.key":key,"sessionKey.loggedIn":true},
+        function(err,user){
+            if(err){
+                console.log(err);
+                res.redirect("/log-in");
+            } else if(user){//User found 
+                isSessionDateValid(user).then((result)=>{
+                    if(result){ // Session date is valid ==> user authenticated
+                        automathic = false; //settign authomaticlight mode to off
+                        led.on();
+                        res.render('room.ejs');
+                        console.log('LED ON');
+                    } else { // Session date isn't vaild
+                        resetSession(user,function(){
+                            res.redirect("/log-in");
+                        });    
+                    }
+                }).catch((err)=>{console.log(err)});            
+            } else {//Authintication failed
+                console.log("user not found");
+                res.redirect("/log-in");
+            }
+        });
+    
+    } else {
+        res.redirect("/log-in");
+    }
 });
 
 //LED OFF
 //updated with auth
 app.post('/led-off', function (req, res) {
 
-    const username = req.body.username;
-    const key = req.body.key;
-    console.log(key);
-
-    //autinticatin user
-    User.findOne({username:username, "sessionKey.key":key,"sessionKey.loggedIn":true},
-    function(err,user){
-        if(err){
-            console.log(err);
-            res.redirect("/");
-        } else if(user){//user found
-            isSessionDateValid(user).then((result)=>{
-                if(result){// Session date is valid ==> user authenticated
-                    automathic = false; //settign authomatic light mode to off
-                    led.off();
-                    console.log('LED OFF');
-                    res.render('room.ejs',{username:username, key:key});
-                } else {//Session date isn't valid
-                    resetSession(user,function(){
-                        res.redirect("/");
-                    });
-                }
-            }).catch( (err) => {console.log(err);});
-        } else {//Authintication failed
-            res.redirect("/");
-        }
-    });
+    //getting session data from cookie
+    const cookie = req.signedCookies.sessionKey;
+    if(cookie){//checking that the cookie still exists
+        const username = cookie.username;
+        const key = cookie.key;
+        console.log(key);
+    
+        //autinticatin user
+        User.findOne({username:username, "sessionKey.key":key,"sessionKey.loggedIn":true},
+        function(err,user){
+            if(err){
+                console.log(err);
+                res.redirect("/log-in");
+            } else if(user){//user found
+                isSessionDateValid(user).then((result)=>{
+                    if(result){// Session date is valid ==> user authenticated
+                        automathic = false; //settign authomatic light mode to off
+                        led.off();
+                        console.log('LED OFF');
+                        res.render('room.ejs');
+                    } else {//Session date isn't valid
+                        resetSession(user,function(){
+                            res.redirect("/log-in");
+                        });
+                    }
+                }).catch( (err) => {console.log(err);});
+            } else {//Authintication failed
+                res.redirect("/log-in");
+            }
+        });
+    
+    } else {
+        res.redirect("/log-in");
+    }
 });
 
 //AUTO LED ON
 //updated with auth
 app.post('/a-on', function (req, res) {
 
-
-    const username = req.body.username;
-    const key = req.body.key;
-    console.log(key);
-
-    //autinticatin user
-    User.findOne({username:username, "sessionKey.key":key,"sessionKey.loggedIn":true},
-    function(err,user){
-        if(err){
-            console.log(err);
-            res.redirect("/");
-        } else if(user){//User found
-            isSessionDateValid(user).then((result)=>{
-                if(result){ //Session date is valid
-                    automathic = true;  //settign authomaticlight mode to on
-                    autoLight();
-                    console.log("autoLight");
-                    res.render('room.ejs',{username:username, key:key});
-                } else { //Session date isn't valid
-                    resetSession(user,function(){
-                        res.redirect("/");
-                    });
-                }
-            }).catch((err)=>{console.log(err)});  
-        } else {//Authintication failed
-            res.redirect("/");
-        }
-    });
+    //getting session data from cookie
+    const cookie = req.signedCookies.sessionKey;
+    if(cookie){//checking that the cookie still exists
+        const username = cookie.username;
+        const key = cookie.key;
+        console.log(key);
+    
+        //autinticatin user
+        User.findOne({username:username, "sessionKey.key":key,"sessionKey.loggedIn":true},
+        function(err,user){
+            if(err){
+                console.log(err);
+                res.redirect("/log-in");
+            } else if(user){//User found
+                isSessionDateValid(user).then((result)=>{
+                    if(result){ //Session date is valid
+                        automathic = true;  //settign authomaticlight mode to on
+                        autoLight();
+                        console.log("autoLight");
+                        res.render('room.ejs');
+                    } else { //Session date isn't valid
+                        resetSession(user,function(){
+                            res.redirect("/log-in");
+                        });
+                    }
+                }).catch((err)=>{console.log(err)});  
+            } else {//Authintication failed
+                res.redirect("/log-in");
+            }
+        });
+    
+    } else {
+        res.redirect("/log-in");
+    }
 });
 
 
 //LOG OUT
 app.post('/log-out', function(req,res){
-    const username = req.body.username;
-    const key = req.body.key;
 
-    //autinticatin user
-    User.findOne({username:username,"sessionKey.key":key})
-    .then((user)=>{resetSession(user)})
-    .catch((err)=>{console.log(err)});
-    res.redirect("/");
+    //getting session data from cookie
+    const cookie = req.signedCookies.sessionKey;
+    if(cookie){//checking that the cookie still exists
+        const username = cookie.username;
+        const key = cookie.key;
+        res.clearCookie("sessionKey");
+    
+        //autinticatin user
+        User.findOne({username:username,"sessionKey.key":key})
+        .then((user)=>{resetSession(user)})
+        .catch((err)=>{console.log(err)});
+        res.redirect("/log-in");
+    
+    } else {
+        res.redirect("/log-in");
+    }
 });
 
 //respone to 404
