@@ -4,16 +4,25 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#a7d4ac"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital@1&family=Raleway:ital,wght@1,500&display=swap" rel="stylesheet">
     <title>Matan's room</title>
     <link rel="stylesheet" href="styles/room.css">
 </head>
 <body>
-    <div class="logout">
-        <form action="/log-out" method="post">
-            <button method="submit">logout</button>
-        </form>
-    </div>
-    <h1>MATAN'S ROOM</h1>
+    <header>
+        <div class="title">
+            <h1>MATAN'S ROOM</h1>
+        </div>
+        <div class="logout-btn">
+            <form action="/log-out" method="post">
+                <button method="submit">
+                    <img src="/images/opened-door-aperture-svgrepo-com.svg" alt="">
+                    <p>logout</p>
+                </button>
+            </form>
+        </div>
+    </header>
     <div class="actions">
         <form action="/led-on" method="post">
             <button action="submit">turn on light</button>
@@ -24,6 +33,12 @@
         <form action="/a-on" method="post">
             <button>auto light</button>
         </form>
+        <!-- for testing purpse -->
+        <%for(let i =0; i<10;i++) {%>
+            <form action="" method="">
+                <button>test <%=i%></button>
+            </form>
+        <%}%>
     </div>
 </body>
 </html>
