@@ -6,6 +6,8 @@ const ejs = require('ejs');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser');
+const encAndHash = require('./encryptionAndHash');
+// const { enc } = require('crypto-js');
 
 mongoose.connect("mongodb://localhost:27017/MyRoom");
 
@@ -77,15 +79,15 @@ app.set('view engine','ejs');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname+'/public'));
-app.use(cookieParser("this Is My secret cookie parse key"));
+app.use(cookieParser(process.env.COOKIE_ENC_KEY));
 
 app.get('/',(req,res)=>{
 
-    const cookie = req.signedCookies.sessionKey;
+    let cookie = req.signedCookies.sessionKey;
     if(cookie){//trying to validate with cookie
+        cookie = encAndHash.decryptObject(cookie);
         const username = cookie.username;
         const key = cookie.key;
-
         User.findOne({username:username,"sessionKey.key":key,"sessionKey.loggedIn":true},
         function(err,user){
             if(err){
@@ -125,13 +127,12 @@ app.post('/log-in',function (req, res) {
 
     //Trying to find the username in the DB
     User.findOne({username: username})
-    .then((user)=>{
+    .then(async (user)=>{
         if(user){ //User found
             // comparing the entered password with the hashed one
-            bcrypt.compare(password,user.password)
-            .then((result) => {
-                if(result){//passwords match
-                    let key = keyGenerator();
+            const passwordsMatching = await encAndHash.compareStringToHash(password,user.password);
+            if(passwordsMatching){
+                let key = keyGenerator();
                     console.log(key);
                     user.sessionKey = {
                         key: key,
@@ -141,21 +142,22 @@ app.post('/log-in',function (req, res) {
 
                     //updating the user's sessionKey in the database
                     user.save().then(()=>{
-                        const cookieData = {
+                        let cookieData = {
                             username: username,
                             key:key
                         };
+
+                        cookieData = encAndHash.encryptObject(cookieData);
+                        console.log(cookieData);
                         
                         //creating cookies and redirect to the the root (room) page
                         res.cookie('sessionKey',cookieData,{signed:true}).redirect("/");
                     }).catch((err)=>{console.log(err)});
-                }
-                else{//passwords aren't match
-                    console.log("username or password incorrect");
-                    res.redirect("/");
-                }
-            })
-            .catch((err) => {console.log(err);});   
+            } else {
+                console.log("username or password incorrect");
+                res.redirect("/");
+            }
+              
         } else {//User wasn't found
             console.log("username or password incorrect");
             res.redirect("/");
@@ -171,8 +173,9 @@ app.post('/log-in',function (req, res) {
 app.post('/led-on', function (req, res) {
     
     //getting session data from cookie
-    const cookie = req.signedCookies.sessionKey;
+    let cookie = req.signedCookies.sessionKey;
     if(cookie){//checking that the cookie still exists
+        cookie = encAndHash.decryptObject(cookie);
         const username = cookie.username;
         const key = cookie.key;
         console.log(key);
@@ -212,8 +215,9 @@ app.post('/led-on', function (req, res) {
 app.post('/led-off', function (req, res) {
 
     //getting session data from cookie
-    const cookie = req.signedCookies.sessionKey;
+    let cookie = req.signedCookies.sessionKey;
     if(cookie){//checking that the cookie still exists
+        cookie = encAndHash.decryptObject(cookie);
         const username = cookie.username;
         const key = cookie.key;
         console.log(key);
@@ -252,8 +256,9 @@ app.post('/led-off', function (req, res) {
 app.post('/a-on', function (req, res) {
 
     //getting session data from cookie
-    const cookie = req.signedCookies.sessionKey;
+    let cookie = req.signedCookies.sessionKey;
     if(cookie){//checking that the cookie still exists
+        cookie = encAndHash.decryptObject(cookie);
         const username = cookie.username;
         const key = cookie.key;
         console.log(key);
@@ -292,8 +297,9 @@ app.post('/a-on', function (req, res) {
 app.post('/log-out', function(req,res){
 
     //getting session data from cookie
-    const cookie = req.signedCookies.sessionKey;
+    let cookie = req.signedCookies.sessionKey;
     if(cookie){//checking that the cookie still exists
+        cookie = encAndHash.decryptObject(cookie);
         const username = cookie.username;
         const key = cookie.key;
         res.clearCookie("sessionKey");

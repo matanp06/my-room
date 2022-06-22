@@ -131,8 +131,9 @@ dist
 
 # My-addings
 auth.js
-encryption.js
+testedEncryption.js
 localhost.crt
 localhost.key
 .expo
 dbChanges.js
+
