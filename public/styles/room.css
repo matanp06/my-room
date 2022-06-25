@@ -7,6 +7,8 @@ body{
     background-color:#d8e8d9 ;
     text-align: center;
     margin: 0;
+    max-height: 100vh;
+    overflow: hidden;
 }
 
 header{
@@ -59,17 +61,21 @@ header h1{
     display: flex;
     position: relative;
     flex-wrap: wrap;
-    width: 90%;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 5%;
     max-height: 85vh;
     overflow-y: scroll;
-    margin: 20px auto;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 .actions form{
-    flex: 40%;
-    margin: 5%;
+    flex: 50%;
+    box-sizing: border-box;
+    padding: 5%;
     aspect-ratio: 1;
-    max-width: 40%;
+    max-width: 50%;
 }
 
 .actions form button{
@@ -77,8 +83,58 @@ header h1{
     width: -webkit-fill-available;
     width: -moz-available;
     aspect-ratio: 1;
+
     font-size: 20px;
     border: 1px solid transparent;
     border-radius: 15px;
     background-color: #a7d4ac;
+}
+
+
+@media(min-width:450px){
+
+    header .title{
+        text-align: left;
+        box-sizing: border-box;
+        padding-left: 50px;
+    }
+
+}
+
+@media(min-width:600px){
+
+    header .logout-btn{
+        text-align: right;
+        box-sizing: border-box;
+    }
+
+    .actions form{
+        flex: 33%;
+        max-width: 33%;
+    }
+
+}
+
+@media(min-width:800px){
+    header .logout-btn{
+        text-align: right;
+        box-sizing: border-box;
+        padding-right: 50px;
+    }
+
+    header .logout-btn button{
+        width: fit-content;
+    }
+
+    .actions form{
+        flex: 25%;
+        max-width: 25%;
+    }
+}
+
+@media(min-width:1100px){
+    .actions form{
+        flex: 20%;
+        max-width: 20%;
+    }
 }
