@@ -1,7 +1,39 @@
+/* COLORS
+lightgreen: #d8e8d9
+green: #a7d4ac
+gray: #474a48  */
+
+
 body{
- background-color: red;
- text-align: center;
+    background-color: red;
+    text-align: center;
+    margin: 0;
+    background-color: #d8e8d9;
+    font-family: 'Raleway', sans-serif;
 }
+
+
+h1, h2, button{
+    color: #474a48;
+}
+
+
+h1{
+    background-color: #a7d4ac;
+    margin: 0;
+    padding: 20px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.container{
+    margin-top: 10vh;
+}
+
+h2{
+    font-family: 'Raleway';
+    font-weight: 300;
+}
+
 
 form{
     display: flex;
@@ -11,8 +43,28 @@ form{
 form > input , form > button{
     margin: 10px 50px;
     font-size: 17px;
+    border:1px solid #474a48 ;
+    border-radius: 50px;
+    font-family: 'Raleway', sans-serif;
 }
 
 form input{
-    padding: 3px;
+    padding: 3px 10px;
+    font-weight: 400;
+}
+
+form button{
+    padding-top: 3px;
+    padding-bottom: 3px;
+    background-color: #a7d4ac;
+    font-weight: 500;
+}
+
+@media(min-width:450px){
+
+    form {
+        margin: 0 auto;
+        max-width: 450px;
+    }
+
 }
