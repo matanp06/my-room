@@ -1,0 +1,76 @@
+:root{
+    --very-light-green: #d8e8d9;
+    --green: #a7d4ac;
+    --gray: #474a48;
+}
+
+body{
+    text-align: center;
+    margin: 0;
+    background-color: var(--very-light-green);
+    font-family: 'Raleway', sans-serif;
+}
+
+
+h1, h2, button{
+    color: var(--gray);
+}
+
+
+h1{
+    background-color: var(--green);
+    margin: 0;
+    padding: 20px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.container{
+    margin-top: 10vh;
+}
+
+
+
+h2{
+    font-family: 'Raleway';
+    font-weight: 300;
+}
+
+.container p{
+    font-size: 12px;
+    color: var(--gray);
+}
+
+
+form{
+    display: flex;
+    flex-direction: column;
+}
+
+form > input , form > button{
+    margin: 10px 50px;
+    font-size: 17px;
+    border:1px solid var(--gray) ;
+    border-radius: 50px;
+    font-family: 'Raleway', sans-serif;
+}
+
+form input{
+    padding: 3px 10px;
+    font-weight: 400;
+}
+
+form button{
+    padding-top: 3px;
+    padding-bottom: 3px;
+    background-color: var(--green);
+    font-weight: 500;
+}
+
+@media(min-width:450px){
+
+    form {
+        margin: 0 auto;
+        max-width: 450px;
+    }
+
+}

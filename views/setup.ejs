@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#a7d4ac"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/setup.css">
+    <title>Setup</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+    <h1>Hello welcome to your room!</h1>
+    <div class="container">
+        <h2>please fill the following form to setup your user</h2>
+        <form action="/setup" method="post">
+            <p>password must contian letters, digits and special chars and must be at least 8 chars long</p>
+            <input type="text" placeholder="username" name="username">
+            <input type="password" placeholder="password" name="password">
+            <input type="password" placeholder="repeat password" name="repeatPassword">
+            <button type="submit">setup!</button>
+        </form>
+    </div>
+
+    <script src="scripts/setup.js"></script>
+</body>
+</html>

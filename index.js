@@ -315,6 +315,81 @@ app.post('/log-out', function(req,res){
     }
 });
 
+//SETUP
+app.get("/setup",function(req,res){
+
+    //checking if there is no users in the db
+    User.findOne({})
+    .then((user)=>{
+        //if there is at least on user => not allowing to setup
+        if(user){
+            res.redirect('/');
+        } else {
+            res.render('setup.ejs');
+        }
+    })
+    .catch((err)=>{
+        console.log(err);
+        res.redirect('/setup');
+    });
+
+});
+
+
+app.post("/setup",function(req,res){
+
+    //checking if there is no users in the db
+    User.findOne({})
+    .then(async (user)=>{
+        //if there is at least on user => not allowing to setup
+        if(user){
+            res.redirect("/");
+        } else {// there are no users in the db
+            const username = req.body.username;
+            if((username)&&(username != "")){//username field is valid
+                let password = req.body.password;
+                if(passwordIsLegal(password)){
+
+                    //hashing the users password
+                    password = await encAndHash.hashAndSalt(password);
+
+                    const key = keyGenerator();
+                    const date = new Date();
+
+                    //saving the new user in the db
+                    const user = new User({
+                        username: username,
+                        password: password,
+                        sessionKey: {
+                            key: key,
+                            loggedIn: true,
+                            date: date
+                        }
+                    });
+                    user.save()
+                    .then(()=>{
+                        //creating cookies and redirect to the the root (room) page
+                        let cookieData = {
+                            username: username,
+                            key:key
+                        };                    
+                        cookieData = encAndHash.encryptObject(cookieData);
+                        res.cookie('sessionKey',cookieData,{signed:true}).redirect("/");
+                    })
+                    .catch((err)=>{
+                        console.log(err);
+                    });
+                }
+                else{//password isn't legal
+                    res.redirect("/setup");
+                } 
+            } else {//username is an empty field or not provided
+                res.redirect('/setup');
+            }
+        }
+    });
+});
+
 //respone to 404
 app.get('/*', function (req, res) {
     res.send('page does\'t found');
@@ -362,10 +437,10 @@ function keyGenerator() {
         let char;
 
         //Selecting the next char acording the random charType
-        if (condition == charType.sign)
+        if (condition == charType.capitalLetter)
             char = Math.floor(Math.random() * 26) + 65;
 
-        else if (condition == charType.capitalLetter)
+        else if (condition == charType.lowerCaseLetter)
             char = Math.floor(Math.random() * 26) + 97;
 
         else
@@ -420,4 +495,19 @@ const resetSession = async function(user,cb){
             cb();
     }).catch((err)=>{console.log(err);});
     
+}
+
+//Checking password legality
+const passwordIsLegal = function(password){
+    const atLeast8Chars = (password.length >= 8);
+
+    //true if the password contains a digit
+    const hasDigits =  /\d/.test(password);
+
+    //true if the password contains a letter
+    const hasLetters =  /[a-zA-Z]/.test(password);
+
+    //true if the password contains a sign
+    const hasSigns =  /([\x21-\x2F]|[\x3A-\x40]|[\x5B-\x60]|[\x7B-\x7E])/.test(password);
+    return(atLeast8Chars&&hasDigits&&hasLetters&&hasSigns);
 }
