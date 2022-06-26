@@ -1,10 +1,15 @@
-/* COLORS
-lightgreen: #d8e8d9
-green: #a7d4ac
-gray: #474a48  */
+
+
+:root{
+    --very-light-green: #d8e8d9;
+    --green: #a7d4ac;
+    --gray:#474a48;
+    --number-of-buttons:2;
+    --action-form-dimensions:calc(90vw/var(--number-of-buttons));
+}
 
 body{
-    background-color:#d8e8d9 ;
+    background-color:var(--very-light-green) ;
     text-align: center;
     margin: 0;
     max-height: 100vh;
@@ -15,7 +20,7 @@ header{
     display: flex;
     align-items: center;
     width: 100%;
-    background-color:#a7d4ac ;
+    background-color:var(--green) ;
 }
 
 header .title{
@@ -42,7 +47,7 @@ header .logout-btn button p{
 }
 
 h1, button{
-    color: #474a48;
+    color: var(--gray);
 }
 
 button{
@@ -71,23 +76,22 @@ header h1{
 }
 
 .actions form{
-    flex: 50%;
+    flex: var(--action-form-dimensions);
     box-sizing: border-box;
     padding: 5%;
-    aspect-ratio: 1;
-    max-width: 50%;
+    height: var(--action-form-dimensions);
+    max-width: var(--action-form-dimensions);
 }
 
 .actions form button{
     margin: 0;
-    width: -webkit-fill-available;
-    width: -moz-available;
-    aspect-ratio: 1;
+    width: 100%;
+    height: 100%;
 
     font-size: 20px;
     border: 1px solid transparent;
     border-radius: 15px;
-    background-color: #a7d4ac;
+    background-color: var(--green);
 }
 
 
@@ -103,19 +107,23 @@ header h1{
 
 @media(min-width:600px){
 
+    :root{
+        --number-of-buttons:3;
+    }
+
     header .logout-btn{
         text-align: right;
         box-sizing: border-box;
     }
 
-    .actions form{
-        flex: 33%;
-        max-width: 33%;
-    }
-
 }
 
 @media(min-width:800px){
+
+    :root{
+        --number-of-buttons:4;
+    }
+
     header .logout-btn{
         text-align: right;
         box-sizing: border-box;
@@ -126,15 +134,13 @@ header h1{
         width: fit-content;
     }
 
-    .actions form{
-        flex: 25%;
-        max-width: 25%;
-    }
 }
 
 @media(min-width:1100px){
-    .actions form{
-        flex: 20%;
-        max-width: 20%;
+
+    :root{
+        --number-of-buttons:5;
     }
+
 }
+
