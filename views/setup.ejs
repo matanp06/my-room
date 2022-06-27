@@ -11,6 +11,11 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 </head>
 <body>
+    <% if(error) { %>
+        <script>
+            alert("<%=error%>");
+        </script>
+    <% } %>
     <h1>Hello welcome to your room!</h1>
     <div class="container">
         <h2>please fill the following form to setup your user</h2>

@@ -76,7 +76,7 @@ header h1{
 }
 
 .actions form{
-    flex: var(--action-form-dimensions);
+    flex: calc(100%/var(--number-of-buttons));
     box-sizing: border-box;
     padding: 5%;
     height: var(--action-form-dimensions);

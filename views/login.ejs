@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="styles/login.css">
 </head>
 <body>
+    <% if(locals.error){%>
+        <script>alert("<%=error%>")</script>
+    <%}%>
     <h1>hello, welcome to my room</h1>
     <div class="container">
         <h2>please log in to continue</h2>

@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser');
 const encAndHash = require('./encryptionAndHash');
-// const { enc } = require('crypto-js');
+const url = require('url');
 
 mongoose.connect("mongodb://localhost:27017/MyRoom");
 
@@ -84,6 +84,8 @@ app.use(cookieParser(process.env.COOKIE_ENC_KEY));
 app.get('/',(req,res)=>{
 
     let cookie = req.signedCookies.sessionKey;
+    const errorCookie = req.cookies.error;
+    res.clearCookie('error');
     if(cookie){//trying to validate with cookie
         cookie = encAndHash.decryptObject(cookie);
         const username = cookie.username;
@@ -96,14 +98,17 @@ app.get('/',(req,res)=>{
             } else if(user){//user found
                 isSessionDateValid(user).then((result)=>{
                     if(result){// session date is valid
-                        res.render("room.ejs");
+                        res.render("room.ejs",{error:errorCookie});
                     } else {//session time isn't valid
                         res.clearCookie("sessionKey");
+                        const errorCookieMessage = "session time is over";
+                        res.cookie('error',errorCookieMessage).redirect("/log-in");
                         res.redirect("/log-in");
                     }
                 }).catch((err)=>{
                     console.log(err);
-                    res.redirect("/log-in");
+                    const errorCookieMessage = "we had a problem please try again";
+                    res.cookie('error',errorCookieMessage).redirect("/log-in");
                 });
             } else {// user wasn't found
                 res.redirect("/log-in");
@@ -112,12 +117,17 @@ app.get('/',(req,res)=>{
     } else {//cookie wasn't found
         res.redirect("/log-in");
     }
-
 });
 
 //LOG IN
 app.get('/log-in',function(req,res){
-    res.render('login.ejs',{});
+    const cookie = req.cookies.error;
+    if(cookie){
+        res.clearCookie('error');
+        res.render('login.ejs',{error:cookie});
+    } else {
+        res.render('login.ejs',{});
+    }
 })
 
 app.post('/log-in',function (req, res) {
@@ -133,38 +143,44 @@ app.post('/log-in',function (req, res) {
             const passwordsMatching = await encAndHash.compareStringToHash(password,user.password);
             if(passwordsMatching){
                 let key = keyGenerator();
-                    console.log(key);
-                    user.sessionKey = {
-                        key: key,
-                        loggedIn:true,
-                        date: new Date()
-                    }
-
-                    //updating the user's sessionKey in the database
-                    user.save().then(()=>{
-                        let cookieData = {
-                            username: username,
-                            key:key
-                        };
-
-                        cookieData = encAndHash.encryptObject(cookieData);
-                        console.log(cookieData);
-                        
-                        //creating cookies and redirect to the the root (room) page
-                        res.cookie('sessionKey',cookieData,{signed:true}).redirect("/");
-                    }).catch((err)=>{console.log(err)});
+                console.log(key);
+                user.sessionKey = {
+                    key: key,
+                    loggedIn:true,
+                    date: new Date()
+                }
+                //updating the user's sessionKey in the database
+                user.save().then(()=>{
+                    let cookieData = {
+                        username: username,
+                        key:key
+                    };
+                    cookieData = encAndHash.encryptObject(cookieData);
+                    console.log(cookieData);
+                    
+                    //creating cookies and redirect to the the root (room) page
+                    res.cookie('sessionKey',cookieData,{signed:true}).redirect("/");
+                }).catch((err)=>{
+                    console.log(err);
+                    const errorCookieMessage = "we had a problem please try again";
+                    res.cookie('error',errorCookieMessage).redirect("/log-in");
+                });
             } else {
-                console.log("username or password incorrect");
-                res.redirect("/");
+                const errorCookieMessage = "username or password is incorrect";
+                res.cookie('error',errorCookieMessage).redirect("/log-in");
             }
               
         } else {//User wasn't found
-            console.log("username or password incorrect");
-            res.redirect("/");
+            const errorCookieMessage = "username or password is incorrect";
+            res.cookie('error',errorCookieMessage).redirect("/log-in");
         }
         
     })
-    .catch((err) => {console.log(err);});
+    .catch((err) => {
+        console.log(err);
+        const errorCookieMessage = "we had a problem please try again";
+        res.cookie('error',errorCookieMessage).redirect("/log-in");
+    });
 
 });
 
@@ -188,17 +204,22 @@ app.post('/led-on', function (req, res) {
                 res.redirect("/log-in");
             } else if(user){//User found 
                 isSessionDateValid(user).then((result)=>{
-                    if(result){ // Session date is valid ==> user authenticated
+                    if(result){ // Session date is valid => user authenticated
                         automathic = false; //settign authomaticlight mode to off
                         led.on();
                         res.render('room.ejs');
                         console.log('LED ON');
                     } else { // Session date isn't vaild
                         resetSession(user,function(){
-                            res.redirect("/log-in");
+                            const errorCookieMessage = "session time is expired\nplease log in again";
+                            res.cookie('error',errorCookieMessage).redirect("/log-in");
                         });    
                     }
-                }).catch((err)=>{console.log(err)});            
+                }).catch((err)=>{
+                    console.log(err)
+                    const errorCookieMessage = "we had a problem please try again";
+                    res.cookie('error',errorCookieMessage).redirect("/");
+                });            
             } else {//Authintication failed
                 console.log("user not found");
                 res.redirect("/log-in");
@@ -206,7 +227,8 @@ app.post('/led-on', function (req, res) {
         });
     
     } else {
-        res.redirect("/log-in");
+        const errorCookieMessage = "you must log in to continue";
+        res.cookie('error',errorCookieMessage).redirect("/log-in");
     }
 });
 
@@ -237,7 +259,8 @@ app.post('/led-off', function (req, res) {
                         res.render('room.ejs');
                     } else {//Session date isn't valid
                         resetSession(user,function(){
-                            res.redirect("/log-in");
+                            const errorCookieMessage = "session time is expired\nplease log in again";
+                            res.cookie('error',errorCookieMessage).redirect("/log-in");
                         });
                     }
                 }).catch( (err) => {console.log(err);});
@@ -247,7 +270,8 @@ app.post('/led-off', function (req, res) {
         });
     
     } else {
-        res.redirect("/log-in");
+        const errorCookieMessage = "you must log in to continue";
+        res.cookie('error',errorCookieMessage).redirect("/log-in");
     }
 });
 
@@ -278,7 +302,8 @@ app.post('/a-on', function (req, res) {
                         res.render('room.ejs');
                     } else { //Session date isn't valid
                         resetSession(user,function(){
-                            res.redirect("/log-in");
+                            const errorCookieMessage = "session time is expired\nplease log in again";
+                            res.cookie('error',errorCookieMessage).redirect("/log-in");
                         });
                     }
                 }).catch((err)=>{console.log(err)});  
@@ -288,7 +313,8 @@ app.post('/a-on', function (req, res) {
         });
     
     } else {
-        res.redirect("/log-in");
+        const errorCookieMessage = "you must log in to continue";
+        res.cookie('error',errorCookieMessage).redirect("/log-in");
     }
 });
 
@@ -323,9 +349,12 @@ app.get("/setup",function(req,res){
     .then((user)=>{
         //if there is at least on user => not allowing to setup
         if(user){
-            res.redirect('/');
+            const errorCookieMessage = "The room has been allready set up";
+            res.cookie('error',errorCookieMessage).redirect("/log-in");
         } else {
-            res.render('setup.ejs');
+            const cookie = req.cookies.error;
+            res.clearCookie('error');
+            res.render('setup.ejs',{error:cookie});
         }
     })
     .catch((err)=>{
@@ -343,7 +372,8 @@ app.post("/setup",function(req,res){
     .then(async (user)=>{
         //if there is at least on user => not allowing to setup
         if(user){
-            res.redirect("/");
+            const errorCookieMessage = "The room has been allready setted up";
+            res.cookie('error',errorCookieMessage).redirect("/log-in");
         } else {// there are no users in the db
             const username = req.body.username;
             if((username)&&(username != "")){//username field is valid
@@ -381,10 +411,12 @@ app.post("/setup",function(req,res){
                     });
                 }
                 else{//password isn't legal
-                    res.redirect("/setup");
+                    const errorCookieMessage = "password must be at least 8 char long\nand contain digits, letter and special chars";
+                    res.cookie('error',errorCookieMessage).redirect("/setup");
                 } 
             } else {//username is an empty field or not provided
-                res.redirect('/setup');
+                const errorCookieMessage = "username field can't be empty";
+                res.cookie('error',errorCookieMessage).redirect("/setup");
             }
         }
     });
@@ -427,7 +459,7 @@ function keyGenerator() {
     let key = "";
 
     const charType = {
-        sign : 0,
+        signsAndDigits : 0,
         capitalLetter : 1,
         lowerCaseLetter :2
     }
