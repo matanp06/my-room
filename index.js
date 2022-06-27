@@ -349,7 +349,7 @@ app.get("/setup",function(req,res){
     .then((user)=>{
         //if there is at least on user => not allowing to setup
         if(user){
-            const errorCookieMessage = "The room has been allready set up";
+            const errorCookieMessage = "The room has already been set up";
             res.cookie('error',errorCookieMessage).redirect("/log-in");
         } else {
             const cookie = req.cookies.error;
@@ -372,7 +372,7 @@ app.post("/setup",function(req,res){
     .then(async (user)=>{
         //if there is at least on user => not allowing to setup
         if(user){
-            const errorCookieMessage = "The room has been allready setted up";
+            const errorCookieMessage = "The room has already been set up";
             res.cookie('error',errorCookieMessage).redirect("/log-in");
         } else {// there are no users in the db
             const username = req.body.username;
